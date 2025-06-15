@@ -271,5 +271,4 @@ export let songs = [
             { time: 1000, text: "I just wanna be yours (Wanna be yours)" }
         ]
     },
-
 ];

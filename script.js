@@ -5,6 +5,10 @@ const songList = document.getElementById('songList')
 const videoBgContainer = document.getElementById('videoBgContainer')
 const backgroundVideo = document.getElementById('backgroundVideo')
 const songListContainer = document.getElementById('songListContainer')
+const homePage = document.getElementById('homePage')
+const playerPage = document.getElementById('playerPage')
+
+const currentPage = 'current-page'
 
 function renderSongList () {
     songs.forEach((song , index) => {
@@ -12,17 +16,13 @@ function renderSongList () {
         const songListItem = document.createElement('li')
         // set list's attribute
         songListItem.setAttribute('data-id' , song.id)
-        // set list animation by aos library
-        songListItem.setAttribute('data-aos' , 'fade-down')
-        songListItem.setAttribute('data-aos-duration' , 100)
-        songListItem.setAttribute('data-aos-delay' , index * 200)
         songListItem.setAttribute('class' , 'song-list')
         // set inner html
         songListItem.innerHTML = `
         <img src="${song.albumArtUrl}" alt="${song.title}">
             <div class="song-detail">
-            <h3>${song.title}</h3>
-            <p>${song.artist}</p>
+            <h3 class="title">${song.title}</h3>
+            <p class="artist">${song.artist}</p>
         </div>
         `
         // append list content to parent element
@@ -38,16 +38,25 @@ function listInteraction () {
     songListItems.forEach((item , index) => {
         item.addEventListener('mouseenter' , (e) => {
             currentBackgroundVideo(e.target.dataset.id)
-            // console.log('list hovering class added')
             console.log(e.target.dataset.id)
             videoBgContainer.classList.add('list-hovering')
         })
-        item.addEventListener('mouseleave' , (e) => {
-            // console.log('list hovering class removed')
+        item.addEventListener('mouseleave' , () => {
             videoBgContainer.classList.remove('list-hovering')
+        })
+        item.addEventListener('click' , (e) => {
+            renderPlayerPage(e.target.dataset.id)
         })
     })
 }
+
+function renderPlayerPage (songId) {
+    homePage.classList.remove(currentPage)
+    if (!playerPage.classList.contains(currentPage)) {
+        playerPage.classList.add(currentPage)
+    }
+}
+
 
 function currentBackgroundVideo (songId) {
     initailVideoBackground()

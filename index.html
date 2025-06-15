@@ -11,10 +11,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <!--  -->
 
-    <!-- lib link -->
-    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
-    <!--  -->
-
     <title>Kronos - Music Player</title>
 </head>
 <body>
@@ -29,13 +25,9 @@
         <div class="video-overlay"></div>
     </div>
 
-    <div class="home-page">
+    <div class="home-page current-page" id="homePage">
         <header>
-            <h1 
-                data-aos="fade-up" 
-                data-aos-duration="500"
-                data-aos-delay="1000"
-            >
+            <h1>
                 Music Player
             </h1>
         </header>        
@@ -47,20 +39,16 @@
         <p 
             id="desc"
         >
-            Code by : Kronos Coder <br>
-            <span>Version 1.0.0</span>
+            Code by : Kronos Coder 
         </p>
     </div>
 
+    <div class="player-page" id="playerPage">
 
-    <!-- lib -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <!--  -->
+    </div>
+
     <!-- js link -->
     <script type="module" src="./script.js"></script>
     <!--  -->
-    <script>
-        AOS.init();
-    </script>
 </body>
 </html>

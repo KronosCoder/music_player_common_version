@@ -16,7 +16,7 @@
     font-style: italic;
     font-size: 12px;
     font-weight: 500;
-    margin-bottom: 3rem;
+    margin-bottom: 20px;
 }
 
 body {
@@ -68,13 +68,18 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3));
+    background: rgba(0, 0, 0, 0.5);
     z-index: 1;
     /* opacity: 1; */
 }
 
 .home-page {
     z-index: 2;
+    display: none;
+}
+
+.home-page.current-page {
+    display: block;
 }
 
 .home-page header {
@@ -84,7 +89,7 @@ body {
 }
 
 .song-list-container {
-    min-width: 400px;
+    min-width: 300px;
     max-width: 600px;
     width: 100%;
     /* background: yellow; */
@@ -95,13 +100,20 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     background-color: var(--song-list);
     border-radius: 10px;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45176);
-    margin-bottom: 1.25rem;
     transition: all 0.3s ease-in-out;
+}
+
+.song-list .title {
+    font-size: 18px;
+}
+
+.song-list {
+    margin-bottom: 0.75rem;
 }
 
 .song-list:hover {
