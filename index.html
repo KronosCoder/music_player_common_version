@@ -21,11 +21,12 @@
             loop 
             muted 
             playsinline
+            src="./videos/consume.webm"
         ></video>
         <div class="video-overlay"></div>
     </div>
 
-    <div class="home-page current-page" id="homePage">
+    <div class="home-page" id="homePage">
         <header>
             <h1>
                 Music Player
@@ -33,7 +34,7 @@
         </header>        
         <main>
             <ul class="song-list-container" id="songListContainer">
-           
+                
             </ul>
         </main>
         <p 
@@ -43,8 +44,45 @@
         </p>
     </div>
 
-    <div class="player-page" id="playerPage">
+    <div class="control-section">
+        <button>
+            <i class="fa-solid fa-arrow-left"></i>
+            Back
+        </button>
+    </div>
 
+    <div class="player-page-container current-page" id="playerPageContainer">
+        <div class="music-player-box">
+            <div class="music-player-header">
+                <img id="currentSongPicture" src="https://tse3.mm.bing.net/th?id=OIP.VwivM--7Xx_SmgsqXBLi8AAAAA&pid=Api&P=0&h=220" alt="">
+                <div class="current-song-detail">
+                    <h3 id="currentSongName">Consume</h3>
+                    <p id="currentSongArtist">Chase Atlantic</p>
+                </div>
+            </div>
+            <div class="lyrics-container">
+                <!-- mock lyrics -->
+                <div class="lyric-line">Lorem ipsum dolor sit</div> 
+                <div class="lyric-line">Lorem ipsum dolor sit</div> 
+                <div class="lyric-line">Lorem ipsum dolor sit</div> 
+                <div class="lyric-line">Lorem ipsum dolor sit</div> 
+                <div class="lyric-line">Lorem ipsum dolor sit</div> 
+                <div class="lyric-line">Lorem ipsum dolor sit</div> 
+                <div class="lyric-line">Lorem ipsum dolor sit</div> 
+                <div class="lyric-line">Lorem ipsum dolor sit</div> 
+                <div class="lyric-line">Lorem ipsum dolor sit</div> 
+                <div class="lyric-line">Lorem ipsum dolor sit</div> 
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-player">
+                    <div id="currentProgress"></div>
+                </div>
+                <div class="display-timer-progress">
+                    <span>00:00</span>
+                    <span>00:00</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- js link -->

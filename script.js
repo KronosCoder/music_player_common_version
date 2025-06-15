@@ -6,7 +6,7 @@ const videoBgContainer = document.getElementById('videoBgContainer')
 const backgroundVideo = document.getElementById('backgroundVideo')
 const songListContainer = document.getElementById('songListContainer')
 const homePage = document.getElementById('homePage')
-const playerPage = document.getElementById('playerPage')
+const playerPageContainer = document.getElementById('playerPageContainer')
 
 const currentPage = 'current-page'
 
@@ -52,8 +52,8 @@ function listInteraction () {
 
 function renderPlayerPage (songId) {
     homePage.classList.remove(currentPage)
-    if (!playerPage.classList.contains(currentPage)) {
-        playerPage.classList.add(currentPage)
+    if (!playerPageContainer.classList.contains(currentPage)) {
+        playerPageContainer.classList.add(currentPage)
     }
 }
 
