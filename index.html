@@ -81,18 +81,17 @@
                 <div class="progress-bar-player">
                     <div id="currentProgress"></div>
                 </div>
-                <div class="display-timer-progress">
-                    <span>00:00</span>
-                    <span>00:00</span>
+                <div class="display-timer-progress" id="displayTimer">
+                    <span id="currentTime">00:00</span>
+                    <span id="maxTimer">00:00</span>
                 </div>
             </div>
             <section class="main-controls-player">
                 <button id="prevSong">
                     <i class="fa-solid fa-backward-step"></i>
                 </button>
-                <button id="togglePlay">
-                    <!-- <i class="fa-solid fa-play"></i> -->
-                    <i class="fa-solid fa-pause"></i>
+                <button id="togglePlayAndPause" >
+                    <i class="fa-solid fa-play"></i>
                 </button>
                 <button id="nextSong">
                     <i class="fa-solid fa-forward-step"></i>

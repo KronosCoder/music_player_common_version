@@ -312,6 +312,7 @@ body {
     background: #fff;
     border-radius: 50px;
     box-shadow: 0 0 10px #fff;
+    transition: all 1s linear;
     animation: progress-running 1s linear infinite;
 }
 
