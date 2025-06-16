@@ -21,12 +21,11 @@
             loop 
             muted 
             playsinline
-            src="./videos/consume.webm"
         ></video>
         <div class="video-overlay"></div>
     </div>
 
-    <div class="home-page" id="homePage">
+    <div class="home-page current-page" id="homePage">
         <header>
             <h1>
                 Music Player
@@ -44,16 +43,21 @@
         </p>
     </div>
 
-    <div class="control-section">
-        <button>
+    <section class="control-section group-player">
+        <button id="backButton">
             <i class="fa-solid fa-arrow-left"></i>
             Back
         </button>
-    </div>
+    </section>
 
-    <div class="player-page-container current-page" id="playerPageContainer">
+    <div class="player-page-container group-player" id="playerPageContainer">
         <div class="music-player-box">
-            <div class="music-player-header">
+            <div class="apple-shortcuts">
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+            </div>
+            <div class="music-player-header" id="musicPlayerHeader">
                 <img id="currentSongPicture" src="https://tse3.mm.bing.net/th?id=OIP.VwivM--7Xx_SmgsqXBLi8AAAAA&pid=Api&P=0&h=220" alt="">
                 <div class="current-song-detail">
                     <h3 id="currentSongName">Consume</h3>
@@ -62,7 +66,7 @@
             </div>
             <div class="lyrics-container">
                 <!-- mock lyrics -->
-                <div class="lyric-line">Lorem ipsum dolor sit</div> 
+                <div class="lyric-line current-lyric">Lorem ipsum dolor sit</div> 
                 <div class="lyric-line">Lorem ipsum dolor sit</div> 
                 <div class="lyric-line">Lorem ipsum dolor sit</div> 
                 <div class="lyric-line">Lorem ipsum dolor sit</div> 
@@ -82,6 +86,38 @@
                     <span>00:00</span>
                 </div>
             </div>
+            <section class="main-controls-player">
+                <button id="prevSong">
+                    <i class="fa-solid fa-backward-step"></i>
+                </button>
+                <button id="togglePlay">
+                    <!-- <i class="fa-solid fa-play"></i> -->
+                    <i class="fa-solid fa-pause"></i>
+                </button>
+                <button id="nextSong">
+                    <i class="fa-solid fa-forward-step"></i>
+                </button>
+            </section>
+            <section class="secondary-controls-player">
+                <button id="repeatSong" class="cursor-pointer">
+                    <i class="fa-solid fa-repeat"></i>
+                </button>
+                <button id="shuffleSong" class="cursor-pointer">
+                    <i class="fa-solid fa-shuffle"></i>
+                </button>
+                <div class="volume-control">
+                    <i class="fa-solid fa-volume-high cursor-pointer" id="volumeStatus"></i>
+                    <input 
+                        type="range" 
+                        name="" 
+                        id="volumeSlider"
+                        >
+                </div>
+                <div class="player-speed-control">
+                    <i class="fa-solid fa-gauge cursor-pointer"></i>
+                    <input type="range" name="" id="playSpeedSlider">
+                </div>
+            </section>
         </div>
     </div>
 
