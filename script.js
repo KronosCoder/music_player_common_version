@@ -55,18 +55,22 @@ function listInteraction () {
 
 function handlePlayerPage (songId) {
     let isPause = false
+    const currentData = currentSongData(songId)
 
+    // i declare this function as auto run function
     const showMusicPlayer = (function () {
+        // set video to start
         initialVideoBackground()
+        // remove class from home page ( change page )
         homePage.classList.remove(currentPage)
+        // add class to new page  ( show page )
         groupsPlayer.forEach((group , index) => {
             if (!group.classList.contains(currentPage)) { 
                 group.classList.add(currentPage)
                 videoBgContainer.classList.add('player-active')
             }
         })
-        
-        const currentData = currentSongData(songId)
+        // set song's detail to current song
         musicPlayerHeader.innerHTML = `
             <img id="currentSongPicture" src="${currentData.albumArtUrl}" alt="${currentData.title}">
             <div class="current-song-detail">
@@ -81,14 +85,19 @@ function handlePlayerPage (songId) {
         return data
     }
 
-    function handleProgressbar () {
-        const data = currentSongData() 
-        const songLength = backgroundVideo.length
-        if (!isPause) {
-            for (let i = 0; i < data.) {
-
-            }
+    function currentSongAudio () {
+        const audio = new Audio(currentData.audioSrc)
+        audio.onloadedmetadata = () => {
+            const duration = audio.duration
+            const minutes = Math.floor(duration / 60)
+            const seconds = Math.floor(duration % 60)
+            const result = seconds < 10 ? '0' + seconds : seconds
+            console.log(`${minutes}:${seconds}`)
         }
+    }
+    currentSongAudio()  
+
+    function handleProgressbar () {
     }
 }
 
