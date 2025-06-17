@@ -11,7 +11,7 @@ const backButtonEl = document.getElementById('backButton')
 const musicPlayerHeaderEl = document.getElementById('musicPlayerHeader')
 const groupsPlayerEL = document.querySelectorAll('.group-player')
 const currentProgressEl = document.getElementById('currentProgress')
-const currentSecEl = document.getElementById('currentSec')
+const currentSecEl = document.getElementById('currentSecond')
 const maxTimerEl = document.getElementById('maxTimer')
 const togglePlayAndPauseEl = document.getElementById('togglePlayAndPause')
 
@@ -60,17 +60,33 @@ function listInteraction () {
 function handlePlayerPage (songId) {
     const currentData = currentSongData(songId)
     const audio = new Audio(currentData.audioSrc)
-    let currentSec = 0
+    let progressPercent = 0
     let currentProgress = 0
-    let isPlaying = true
+    let isPlaying = false
+    let duration = 0 , minutes = 0 , seconds = 0 , formatSeconds = 0 , timer = 0
+
+    audio.onloadedmetadata = () => {
+        duration = audio.duration 
+        minutes = Math.floor(duration / 60)
+        seconds = Math.floor(duration % 60)
+        formatSeconds = seconds < 10 ? '0' + seconds : seconds
+        timer = `${minutes}:${formatSeconds}`
+        maxTimerEl.innerHTML = timer
+    }
+    
 
     // i declare this function as auto run function
     function showMusicPlayer () {
-        // set variable
+        // set default playing to true
+        isPlaying = true
+        handlePlayer()
+
         // set video to start
         initialVideoBackground()
+
         // remove class from home page ( change page )
         homePage.classList.remove(currentPage)
+
         // add class to new page  ( show page )
         groupsPlayerEL.forEach((group , index) => {
             if (!group.classList.contains(currentPage)) { 
@@ -78,6 +94,7 @@ function handlePlayerPage (songId) {
                 videoBgContainer.classList.add('player-active')
             }
         })
+
         // set song's detail to current song
         musicPlayerHeaderEl.innerHTML = `
         <img id="currentSongPicture" src="${currentData.albumArtUrl}" alt="${currentData.title}">
@@ -86,8 +103,6 @@ function handlePlayerPage (songId) {
         <p id="currentSongArtist">${currentData.artist}</p>
         </div>
         `        
-
-        initialProgress()
     }
 
     function currentSongData (songId) {
@@ -95,27 +110,15 @@ function handlePlayerPage (songId) {
        
     }
 
-    function initialProgress () {
-        audio.onloadedmetadata = () => {
-            const duration = audio.duration 
-            const minutes = Math.floor(duration / 60)
-            const seconds = Math.floor(duration % 60)
-            const formatSeconds = seconds < 10 ? '0' + seconds : seconds
-            let timer = `${minutes}:${formatSeconds}`
-            maxTimerEl.innerHTML = timer
-            currentProgressEl.style.width = currentProgress + '%' 
-        }        
-    }
-
     function handlePlayer() {
-        audio.play()
+        audio.play()        
         const interval = setInterval(() => {
             if (isPlaying && !audio.ended) {
-                currentSec = audio.currentTime // fix: use currentTime correctly (was referring to currentSec)
-                console.log(currentSec) // fix: changed to currentSec
+                progressPercent = (audio.currentTime / audio.duration) * 100
+                togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>';
                 progressTracker()
             } else {
-                togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>'
+                togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-play"></i>';
                 clearInterval(interval)
             }
         }, 1000)
@@ -124,27 +127,28 @@ function handlePlayerPage (songId) {
 
     function togglePlayAndPause() {
         if (isPlaying) {
-            audio.play();
             isPlaying = false;
-            console.log('Play');
-            togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>';
-            handlePlayer();
-        } else {
-            console.log('Pause');
-            togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-play"></i>';
             audio.pause();
+            togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-play"></i>';
+        } else {
             isPlaying = true;
+            togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            handlePlayer()
         }
     }
 
 
     function progressTracker() {
-        currentProgress = (audio.currentTime / audio.duration) * 100 // fix: correctly using audio.currentTime instead of audio.currentSec
-        currentProgressEl.style.width = currentProgress + '%' // fix: correctly update progress
+        currentProgress = (audio.currentTime / audio.duration) * 100 
+        currentProgressEl.style.width = currentProgress + '%' 
+        const currentSecond = Math.round(audio.currentTime) < 10 ? '0' + Math.round(audio.currentTime) : Math.round(audio.currentTime) 
+        // const currentMinute =  currentSecond
+        console.log(currentSecond)
+
+        console.log(audio.currentTime)
     }
 
     togglePlayAndPauseEl.addEventListener('click', togglePlayAndPause)
-    // Removed unnecessary setInterval for logging currentSec because it's redundant with progressTracker()
     showMusicPlayer()
 }
 
@@ -157,7 +161,7 @@ function backToHome () {
             videoBgContainer.classList.remove('player-active')
         }
     })
-    homePage.classList.add(currentPage)
+    homePage.classList.add(currentPage) 
 }
 
 function currentBackgroundVideo (songId) {
@@ -170,7 +174,7 @@ function currentBackgroundVideo (songId) {
 }
 
 function initialVideoBackground () {
-    backgroundVideo.currentSec = 0
+    backgroundVideo.currentTime = 0
 }
 
 backButtonEl.addEventListener('click' , () => backToHome())
