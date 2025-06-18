@@ -1,5 +1,5 @@
 // App State
-export let songs = [
+export let albums = [
     {
         id: 1,
         title: "Consume",

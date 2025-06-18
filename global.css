@@ -135,7 +135,7 @@ body {
 }
 
 .song-list:hover {
-    transform: translateY(-5%);
+    transform: scale(1.045176);
     background-color: var(--song-list-hover)
 }
 
@@ -353,7 +353,7 @@ body {
 .secondary-controls-player button {
     all: unset;
     font-size: 1.25rem;
-    color: #b3b3b3;
+    color: #a1a1a1;
     transition: all 0.4s ease-in-out;
 }
 .secondary-controls-player button:hover {
@@ -391,6 +391,10 @@ body {
     border-radius: 50%;
     background: #fff;
     box-shadow: 0 0 5px #fff;
+}
+
+.current-mode {
+    color: #fff !important;
 }
 
 
