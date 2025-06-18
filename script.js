@@ -59,7 +59,7 @@ function listInteraction () {
 
 function handlePlayerPage (songId) {
     const currentData = currentSongData(songId)
-    const audio = new Audio(currentData.audioSrc)
+    let audio = new Audio(currentData.audioSrc)
     let progressPercent = 0
     let currentProgress = 0
     let isPlaying = false
@@ -120,7 +120,7 @@ function handlePlayerPage (songId) {
             } else {
                 togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-play"></i>';
                 clearInterval(interval)
-            }
+        }
         }, 1000)
     }
 
@@ -141,28 +141,34 @@ function handlePlayerPage (songId) {
     function progressTracker() {
         currentProgress = (audio.currentTime / audio.duration) * 100 
         currentProgressEl.style.width = currentProgress + '%' 
-        const currentSecond = Math.round(audio.currentTime) < 10 ? '0' + Math.round(audio.currentTime) : Math.round(audio.currentTime) 
+        const totalSecond = Math.round(audio.currentTime / 60) 
+        const minutes = Math.floor(totalSecond % 60)
         // const currentMinute =  currentSecond
-        console.log(currentSecond)
-
-        console.log(audio.currentTime)
+        // console.log(currentSecond)
+        // console.log(audio.currentTime)
     }
 
+    function backToHome () {
+        if (audio && audio !== null) {
+            audio.pause()
+            audio.src = ''
+            console.log(audio)
+        }
+        groupsPlayerEL.forEach((group , index) => {
+            if (group.classList.contains(currentPage)) { 
+                group.classList.remove(currentPage)
+                videoBgContainer.classList.remove('player-active')
+            }
+        })
+        homePage.classList.add(currentPage) 
+    }
+
+    
+    backButtonEl.addEventListener('click' , backToHome)
     togglePlayAndPauseEl.addEventListener('click', togglePlayAndPause)
     showMusicPlayer()
 }
 
-
-
-function backToHome () {
-    groupsPlayerEL.forEach((group , index) => {
-        if (group.classList.contains(currentPage)) { 
-            group.classList.remove(currentPage)
-            videoBgContainer.classList.remove('player-active')
-        }
-    })
-    homePage.classList.add(currentPage) 
-}
 
 function currentBackgroundVideo (songId) {
     initialVideoBackground()
@@ -176,8 +182,6 @@ function currentBackgroundVideo (songId) {
 function initialVideoBackground () {
     backgroundVideo.currentTime = 0
 }
-
-backButtonEl.addEventListener('click' , () => backToHome())
 
 function initailFunction () {
     console.log('Started ...')
