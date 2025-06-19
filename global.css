@@ -134,7 +134,7 @@ body {
     margin-bottom: 0.75rem;
 }
 
-.song-list:hover {
+.song-list-container:has(.song-list:hover) .song-list:nth-child([data-id="1"]) {
     transform: scale(1.045176);
     background-color: var(--song-list-hover)
 }
