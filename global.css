@@ -363,16 +363,21 @@ body {
     flex-wrap: wrap;
 }
 
-.secondary-controls-player button {
+.secondary-controls-player .main-option-buttons {
     all: unset;
     font-size: 1.25rem;
     color: #a1a1a1;
+    cursor: pointer;
     transition: all 0.4s ease-in-out;
 }
-.secondary-controls-player button:hover {
+.secondary-controls-player .main-option-buttons:hover {
     font-size: 1.25rem;
     transform: scale(1.2);
     color: #fff;
+}
+
+.secondary-controls-player .secondary-option-buttons {
+    all: unset !important;
 }
 
 .secondary-controls-player .volume-control {
