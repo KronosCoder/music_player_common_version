@@ -1,6 +1,6 @@
 import { albums } from './albums.js'
 
-// DOM Element
+// All DOM Element
 const songList = document.getElementById('songList')
 const videoBgContainer = document.getElementById('videoBgContainer')
 const backgroundVideo = document.getElementById('backgroundVideo')
@@ -20,26 +20,30 @@ const nextSongEl = document.getElementById('nextSong')
 const prevSongEl = document.getElementById('prevSong')
 
 
-// utils
+// util variables
+
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-let isTransitioning = false;
-let audio = null
-let playerInterval = null 
-let thisMinute = 0 
-let thisSecond = 0 
-let isPlaying = false 
-let currentData = null
+const currentPage = 'current-page'
+const allModes = ['repeat' , 'shuffle']
+
+let isTransitioning = false , isPlaying = false , currentData = null
+let audio = null , playerInterval = null 
+let thisMinute = 0 , thisSecond = 0 
+
 // 
 
-const currentPage = 'current-page'
-const modes = ['repeat' , 'shuffle']
 
-
+// Render all of song list items
 function renderSongList () {
+
+    // Loop the all of songs in album  
     albums.forEach((song , index) => {
+        // Create li element and set attribute
         const songListItem = document.createElement('li')
         songListItem.setAttribute('data-id', song.id)
         songListItem.setAttribute('class', 'song-list')
+
+        // Set content in each li element by song detail
         songListItem.innerHTML = `
         <img src="${song.albumArtUrl}" alt="${song.title}">
         <div class="song-detail">
@@ -47,27 +51,53 @@ function renderSongList () {
             <p class="artist">${song.artist}</p>
         </div>
         `
+        // Append the content of li to parent's element
         songListContainer.appendChild(songListItem)
     })
 
+    // Call interaction of list item #Ex : Hover , Click etc.
     listInteraction()
 }
 
+// Handle all of users interaction to list items ( song )
 function listInteraction () {
     const songListItems = document.querySelectorAll('.song-list')
     songListItems.forEach(item => {
         item.addEventListener('mouseenter', (e) => {
-            currentBackgroundVideo(e.target.dataset.id)
+            const listItemId = e.target.dataset.id
+            
+            currentBackgroundVideo(listItemId)
+            listHoveringEffect(listItemId , e)
+            
             videoBgContainer.classList.add('list-hovering')
         })
-        item.addEventListener('mouseleave', () => {
+        item.addEventListener('mouseleave', (e) => {
+            const listItemId = e.target.dataset.id
             videoBgContainer.classList.remove('list-hovering')
+            listHoveringEffect(listItemId , e)
         })
         item.addEventListener('click', (e) => {
             const listItemId = e.target.closest('.song-list').dataset.id
-            handlePlayerPage(listItemId)
+            handlePlayerPage(listItemId , e)
         })
     })
+
+    function listHoveringEffect (listItemId , e) {
+        const songListItems = document.querySelectorAll('.song-list')
+
+        if (e.type === 'mouseenter') {
+            songListItems[listItemId - 1]?.classList.add('main-list-hover')
+            setTimeout(() => {
+                songListItems[listItemId]?.classList.add('side-list-hover')
+                songListItems[listItemId - 2]?.classList.add('side-list-hover')
+            } , 80)
+        } else {
+            songListItems.forEach(item => {
+                item.classList.remove('main-list-hover')
+                item.classList.remove('side-list-hover')
+            })
+        } 
+    }
 }
 
 function handlePlayerPage (songId) {
@@ -117,6 +147,7 @@ function handlePlayerPage (songId) {
 
     async function handlePlayer() {
         resetTimer()
+        if (!audio.pause) return
         await audio.play() 
         .then(() => {
             playerInterval = setInterval(() => {
@@ -133,11 +164,14 @@ function handlePlayerPage (songId) {
             }, 1000)
         })
         .catch((error) => {
-            console.warn('Playback failed or was interrupted : ' + error)
+            console.warn('Playback failed : ' + error)
         })
     }
 
     function progressTracker() {
+        // add glowing effect to progressbar while running
+        if (isPlaying) currentProgressEl.classList.add('running')
+
         if (thisSecond >= 59) {
             thisSecond = -1
             thisMinute++
@@ -156,15 +190,33 @@ function handlePlayerPage (songId) {
 
     function togglePlayAndPause() {
         if (isPlaying) {
+            console.log('Pause ...')
+            // Pause the music
             audio.pause()
             isPlaying = false
+            
+            // clear all interval
             clearInterval(playerInterval)
             playerInterval = null
+            
+            // change the icon in main control
             togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-play"></i>'
+            
+            // remove glowing effect to progressbar while running
+            currentProgressEl.classList.remove('running')
+            console.log(isPlaying)
         } else {
+            console.log('Playing ...')
+            // start playig
             isPlaying = true
+            
+            // change the icon in main control
             togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>'
+            
+            // add glowing effect to progressbar while running
+            currentProgressEl.classList.add('running')
             handlePlayer()
+            console.log(isPlaying)
         }
     }
 
@@ -194,6 +246,7 @@ function handlePlayerPage (songId) {
             case 'previous':
                 playPreviousSong(e)
                 break;
+
             case 'repeat':
                 togglePlayerMode(e)
                 break;
@@ -201,6 +254,7 @@ function handlePlayerPage (songId) {
             case 'shuffle':
                 togglePlayerMode(e)
                 break;
+
             default:
                 console.log('Unknown selected mode !')
         }
@@ -228,7 +282,8 @@ function handlePlayerPage (songId) {
             const currentIndex = albums.findIndex(song => song.id === currentData.id)
             let nextIndex = (currentIndex + 1) % albums.length
             const nextSongId = albums[nextIndex].id
-        
+            
+            currentBackgroundVideo(nextSongId)
             handlePlayerPage(nextSongId)
     
             isTransitioning = false
@@ -240,12 +295,14 @@ function handlePlayerPage (songId) {
         
             resetAudio()
             await delay(100)
+
         
             const currentIndex = albums.findIndex(song => song.id === currentData.id)
             let prevIndex = (currentIndex - 1)
             if (prevIndex < 0) prevIndex = albums.length - 1
             const prevSongId = albums[prevIndex].id
         
+            currentBackgroundVideo(prevSongId)
             handlePlayerPage(prevSongId)
     
             isTransitioning = false
@@ -253,6 +310,7 @@ function handlePlayerPage (songId) {
     }
 
     
+    // all of event in music player's page
     backButtonEl.addEventListener('click', backToHome)
     togglePlayAndPauseEl.addEventListener('click', togglePlayAndPause)
 
@@ -261,14 +319,17 @@ function handlePlayerPage (songId) {
     repeatButtonEl.addEventListener('click' , (e) => handleControlPlayer('repeat' , e))
     shuffleButtonEl.addEventListener('click', (e) => handleControlPlayer('shuffle' , e))
 
+    // initial function
     showMusicPlayer()
 }
 
+// reset timer in player
 function resetTimer () {() => 
     thisMinute = 0
     thisSecond = 0
 }
 
+// reset audio setting in player
 function resetAudio () {
     if (audio) {
         audio.pause()
@@ -278,23 +339,33 @@ function resetAudio () {
     }
 }
 
-
+// Check current song data and set background to current song 
 function currentBackgroundVideo (songId) {
+
+    // Set background's video to default ( reset )
     initialVideoBackground()
+
+    // Loop all songs in albums and set current background from current song
     albums.forEach((song) => {
         if (song.id == songId) {
+            backgroundVideo.src = ''
             backgroundVideo.setAttribute('src', song.videoBgSrc)
         }
     })
 }
 
+// Reset current video background time to start 
 function initialVideoBackground () {
     backgroundVideo.currentTime = 0
 }
 
+// Main initial function 
 function initailFunction () {
     console.log('Started ...')
+
+    // Call render song function
     renderSongList()
 }
 
+//  Wait til dom loaded and call initail function
 document.addEventListener('DOMContentLoaded', initailFunction())
