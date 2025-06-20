@@ -23,12 +23,14 @@ const closeShortButton = document.getElementById('closeShortButton')
 // Global Variables
 const currentPage = 'current-page'
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+const modes = ['next' , 'previous' , 'repeat' , 'shuffle']
 
 let isTransitioning = false
 let currentData = null
 let audio = null
 let animationFrameId = null
 let isPlaying = false
+let currentMode = null
 
 // Render Song List
 function renderSongList() {
@@ -94,10 +96,13 @@ function setupAudioEvents() {
         const totalMinutes = Math.floor(duration / 60)
         const totalSeconds = Math.floor(duration % 60)
         const formatSeconds = totalSeconds < 10 ? '0' + totalSeconds : totalSeconds
+        // console.log(volumeSliderEl.value)
+        audio.volume = volumeSliderEl.value / 100
         maxTimerEl.innerHTML = `${totalMinutes}:${formatSeconds}`
     }
     
     audio.onended = () => {
+        checkCurrentMode()
         isPlaying = false
         togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-play"></i>'
         cleanupInterval()
@@ -222,19 +227,44 @@ function backToHome() {
 }
 
 // Control Functions
-function handleControlPlayer(mode, e) {
-    switch (mode) {
-        case 'next':
+function handleControlPlayer(idxMode, e) {
+    switch (idxMode) {
+        case 0:
             playNextSong()
             break
-        case 'previous':
+        case 1:
             playPreviousSong()
             break
-        case 'repeat':
-        case 'shuffle':
+        case 2:
+            if (!currentMode) {
+                currentMode = idxMode
+            } else {
+                currentMode = null
+            }
+
+            console.log(currentMode)
+            togglePlayerMode(e)
+            break
+        case 3:
             togglePlayerMode(e)
             break
     }
+}
+
+async function checkCurrentMode () {
+    console.log(currentMode);
+    if (currentMode !== null) {
+        switch(currentMode) {
+            case 2:         
+                repeatMode()
+                break;
+            case 3:
+                break;
+            default:
+            console.log("This Mode doesn't match !!")
+        }
+        return
+    } 
 }
 
 function togglePlayerMode(e) {
@@ -279,10 +309,10 @@ async function switchSong(songId) {
     handlePlayerPage(songId)
 }
 
-function repeatSong () {
-    if (audio.ended) {
-        playAudio()
-    }
+async function repeatMode () {
+    cleanupPlayer()
+    await delay(500) 
+    startPlayer()
 }
 
 // Utility Functions
@@ -335,10 +365,10 @@ function setupEventListeners() {
     closeShortButton.addEventListener('click' , backToHome)
 
     togglePlayAndPauseEl.addEventListener('click', togglePlayAndPause)
-    nextSongEl.addEventListener('click', (e) => handleControlPlayer('next', e))
-    prevSongEl.addEventListener('click', (e) => handleControlPlayer('previous', e))
-    repeatButtonEl.addEventListener('click', (e) => handleControlPlayer('repeat', e))
-    shuffleButtonEl.addEventListener('click', (e) => handleControlPlayer('shuffle', e))
+    nextSongEl.addEventListener('click', (e) => handleControlPlayer(0 , e))
+    prevSongEl.addEventListener('click', (e) => handleControlPlayer(1 , e))
+    repeatButtonEl.addEventListener('click', (e) => handleControlPlayer(2 , e))
+    shuffleButtonEl.addEventListener('click', (e) => handleControlPlayer(3 , e))
     volumeSliderEl.addEventListener('input' , (e) => updateVolume(e))
     volumeSliderEl.addEventListener('change' , (e) => updateVolume(e))
     iconVolumeStatusEl.addEventListener('click' , toggleVolume)
