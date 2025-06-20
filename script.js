@@ -18,7 +18,7 @@ const videoBgContainer = document.getElementById('videoBgContainer')
 const backgroundVideo = document.getElementById('backgroundVideo')
 const volumeSliderEl = document.getElementById('volumeSlider')
 const iconVolumeStatusEl = document.getElementById('iconStatusVolume')
-
+const closeShortButton = document.getElementById('closeShortButton')
 
 // Global Variables
 const currentPage = 'current-page'
@@ -27,7 +27,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 let isTransitioning = false
 let currentData = null
 let audio = null
-let playerInterval = null
+let animationFrameId = null
 let isPlaying = false
 
 // Render Song List
@@ -65,34 +65,16 @@ function listInteraction() {
 function handleMouseEnter(e) {
     const listItemId = e.target.dataset.id
     currentBackgroundVideo(listItemId)
-    applyHoverEffect(listItemId, 'enter')
     videoBgContainer.classList.add('list-hovering')
 }
 
 function handleMouseLeave(e) {
     videoBgContainer.classList.remove('list-hovering')
-    applyHoverEffect(null, 'leave')
 }
 
 function handleSongClick(e) {
     const listItemId = e.target.closest('.song-list').dataset.id
     handlePlayerPage(listItemId)
-}
-
-function applyHoverEffect(listItemId, type) {
-    const songListItems = document.querySelectorAll('.song-list')
-    
-    if (type === 'enter') {
-        songListItems[listItemId - 1]?.classList.add('main-list-hover')
-        setTimeout(() => {
-            songListItems[listItemId]?.classList.add('side-list-hover')
-            songListItems[listItemId - 2]?.classList.add('side-list-hover')
-        }, 80)
-    } else {
-        songListItems.forEach(item => {
-            item.classList.remove('main-list-hover', 'side-list-hover')
-        })
-    }
 }
 
 // Player Functions
@@ -136,7 +118,7 @@ function startPlayer() {
     
     audio.play()
         .then(() => {
-            playerInterval = setInterval(progressTracker, 100) 
+            progressTracker()
         })
         .catch(error => console.warn('Playback failed:', error))
 }
@@ -159,6 +141,8 @@ function progressTracker() {
     const formatSecond = seconds < 10 ? `0${seconds}` : seconds
     
     currentSecEl.innerHTML = `${formatMinute}:${formatSecond}`
+
+    animationFrameId = requestAnimationFrame(progressTracker)
 }
 
 function togglePlayAndPause() {
@@ -185,7 +169,7 @@ function playAudio() {
             isPlaying = true
             togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>'
             currentProgressEl.classList.add('running')
-            playerInterval = setInterval(progressTracker, 100)
+            progressTracker()
         })
         .catch(error => console.warn('Playback failed:', error))
 }
@@ -206,13 +190,12 @@ function updateVolume(e) {
 }
 
 function toggleVolume () {
-    if (!audio.mute) {
+    if (!audio.muted) {
         iconVolumeStatusEl.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>'
     } else {
         iconVolumeStatusEl.innerHTML = '<i class="fa-solid fa-volume-high"></i>'
     }
-        
-    audio.mute = !audio.mute
+    audio.muted = !audio.muted
 }
 
 function switchToPlayerPage() {
@@ -296,6 +279,12 @@ async function switchSong(songId) {
     handlePlayerPage(songId)
 }
 
+function repeatSong () {
+    if (audio.ended) {
+        playAudio()
+    }
+}
+
 // Utility Functions
 function cleanupPlayer() {
     cleanupInterval()
@@ -304,9 +293,9 @@ function cleanupPlayer() {
 }
 
 function cleanupInterval() {
-    if (playerInterval) {
-        clearInterval(playerInterval)
-        playerInterval = null
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+        animationFrameId = null
     }
 }
 
@@ -343,6 +332,8 @@ function initialVideoBackground() {
 // Event Listeners
 function setupEventListeners() {
     backButtonEl.addEventListener('click', backToHome)
+    closeShortButton.addEventListener('click' , backToHome)
+
     togglePlayAndPauseEl.addEventListener('click', togglePlayAndPause)
     nextSongEl.addEventListener('click', (e) => handleControlPlayer('next', e))
     prevSongEl.addEventListener('click', (e) => handleControlPlayer('previous', e))
@@ -353,7 +344,7 @@ function setupEventListeners() {
     iconVolumeStatusEl.addEventListener('click' , toggleVolume)
 }
 
-// Initialize
+// Initialize function
 function init() {
     console.log('Music Player Started...')
     renderSongList()
