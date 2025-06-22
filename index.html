@@ -78,7 +78,7 @@
                 <div class="lyric-line">Lorem ipsum dolor sit</div> 
             </div>
             <div class="progress-bar-container">
-                <div class="progress-bar-player">
+                <div class="progress-bar-player" id="progressPlayer">
                     <div id="currentProgress"></div>
                 </div>
                 <div class="display-timer-progress" id="displayTimer">
@@ -87,7 +87,7 @@
                 </div>
             </div>
             <section class="main-controls-player">
-                <button id="prevSong">
+                <button id="prevSong">  
                     <i class="fa-solid fa-backward-step"></i>
                 </button>
                 <button id="togglePlayAndPause" >
@@ -112,16 +112,27 @@
                         type="range" 
                         name="" 
                         id="volumeSlider"
-                        >
+                    >
                 </div>
                 <div class="player-speed-control">
                     <i class="fa-solid fa-gauge cursor-pointer"></i>
-                    <input type="range" name="" id="playSpeedSlider">
+                    <input 
+                    type="range" 
+                    name="" 
+                    id="playSpeedSlider"
+                    step="0.5"
+                    value="1"
+                    min="0.5"
+                    max="4"
+                    >
                 </div>
             </section>
         </div>
     </div>
 
+    <div class="player-info" id="playerInfo">
+        <p>100%</p>
+    </div>
     <!-- js link -->
     <script type="module" src="./script.js"></script>
     <!--  -->

@@ -17,7 +17,9 @@ const videoBgContainer = document.getElementById('videoBgContainer');
 const backgroundVideo = document.getElementById('backgroundVideo');
 const volumeSliderEl = document.getElementById('volumeSlider');
 const iconVolumeStatusEl = document.getElementById('iconStatusVolume');
-const closeShortButton = document.getElementById('closeShortButton');
+const closeShortButtonEl = document.getElementById('closeShortButton');
+const displayInfoEl = document.getElementById('playerInfo');
+const progressPlayerEl = document.getElementById('progressPlayer');
 
 const currentPage = 'current-page';
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -30,30 +32,49 @@ let animationFrameId = null;
 let isPlaying = false;
 let currentMode = null;
 
+document.addEventListener('DOMContentLoaded', () => {
+    (function setupEventListeners() {
+        backButtonEl.addEventListener('click', backToHome);
+        closeShortButtonEl.addEventListener('click', backToHome);
+        progressInteraction();
+        displayInfoInteraction();
+    })();
+
+    (function renderSongList() {
+        albums.forEach(song => {
+            const songListItem = document.createElement('li');
+            songListItem.setAttribute('data-id', song.id);
+            songListItem.setAttribute('class', 'song-list');
+            songListItem.innerHTML = `
+                <img class="currentSongPicture" src="${song.albumArtUrl}" alt="${song.title}">
+                <div class="current-song-detail">
+                    <h3 class="currentSongName">${song.title}</h3>
+                    <p class="currentSongArtist">${song.artist}</p>
+                </div>
+            `;
+            songListContainer.appendChild(songListItem);
+        });
+        listInteraction();
+    })();
+});
+
 function listInteraction() {
     const songListItems = document.querySelectorAll('.song-list');
     songListItems.forEach(item => {
-        item.addEventListener('mouseenter', handleMouseEnter);
-        item.addEventListener('mouseleave', handleMouseLeave);
-        item.addEventListener('click', handleSongClick);
+        item.addEventListener('mouseenter', (e) => {
+            const listItemId = e.target.dataset.id;
+            currentBackgroundVideo(listItemId);
+            videoBgContainer.classList.add('list-hovering');
+        });
+        item.addEventListener('mouseleave', () => {
+            videoBgContainer.classList.remove('list-hovering');
+        });
+        item.addEventListener('click', (e) => {
+            const listItemId = e.target.closest('.song-list').dataset.id;
+            handlePlayerPage(listItemId);
+        });
     });
 }
-
-function handleMouseEnter(e) {
-    const listItemId = e.target.dataset.id;
-    currentBackgroundVideo(listItemId);
-    videoBgContainer.classList.add('list-hovering');
-}
-
-function handleMouseLeave(e) {
-    videoBgContainer.classList.remove('list-hovering');
-}
-
-function handleSongClick(e) {
-    const listItemId = e.target.closest('.song-list').dataset.id;
-    handlePlayerPage(listItemId);
-}
-
 function handlePlayerPage(songId) {
     cleanupPlayer();
     currentData = albums.find(s => s.id == songId);
@@ -75,7 +96,7 @@ function setupAudioEvents() {
     audio.onended = () => {
         checkCurrentMode();
         isPlaying = false;
-       togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-play"></i>';
+        togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-play"></i>';
         cleanupInterval();
     };
 }
@@ -97,8 +118,25 @@ function startPlayer() {
         .catch(error => console.warn('Playback failed:', error));
 }
 
+function progressInteraction () {
+    togglePlayAndPauseEl.addEventListener('click', togglePlayAndPause);
+
+    nextSongEl.addEventListener('click', (e) => handleControlPlayer(0, e));
+    prevSongEl.addEventListener('click', (e) => handleControlPlayer(1, e));
+    repeatButtonEl.addEventListener('click', (e) => handleControlPlayer(2, e));
+    shuffleButtonEl.addEventListener('click', (e) => handleControlPlayer(3, e));
+    volumeSliderEl.addEventListener('input', (e) => updateVolume(e));
+    volumeSliderEl.addEventListener('change', (e) => updateVolume(e));
+    iconVolumeStatusEl.addEventListener('click', toggleVolume);
+
+    progressPlayerEl.addEventListener('mouseenter' , (e) => updateAudioTime(e))
+    // progressPlayerEl.addEventListener('mousemove' , (e) => updateAudioTime(e))
+    progressPlayerEl.addEventListener('input' , (e) => updateAudioTime(e))
+    progressPlayerEl.addEventListener('click' , (e) => updateAudioTime(e))
+}
+
 function progressTracker() {
-    if (!audio || !isPlaying) return;
+    if (!audio || !isPlaying || isTransitioning) return;
     const currentTime = audio.currentTime;
     const duration = audio.duration;
     const progress = (currentTime / duration) * 100;
@@ -190,6 +228,7 @@ function backToHome() {
     videoBgContainer.classList.remove('player-active');
     homePage.classList.add(currentPage);
 }
+// Control player function 
 
 function handleControlPlayer(idxMode, e) {
     switch (idxMode) {
@@ -208,7 +247,6 @@ function handleControlPlayer(idxMode, e) {
             console.log(currentMode);
             togglePlayerMode(e);
             break;
-
         case 3:
             togglePlayerMode(e);
             break;
@@ -220,7 +258,7 @@ async function checkCurrentMode() {
     console.log(currentMode);
 
     if (currentMode !== null) {
-        switch (currentMode) {
+        switch (currentMode) {  
             case 2:
                 repeatMode();
                 break;
@@ -277,8 +315,61 @@ async function switchSong(songId) {
 }
 
 async function repeatMode() {
+    await delay(1500);
 
+    resetUI();
+    cleanupInterval();
+
+    isPlaying = !isPlaying;
+    togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    startPlayer();
 }
+
+async function updateAudioTime(e) {
+    const currentEvent = e.type;
+    const rect = progressPlayerEl.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const percent = Math.abs(Math.round((mouseX / progressPlayerEl.offsetWidth) * 100));
+    const newTime = Math.abs(Math.round((percent / 100) * audio.duration));
+    
+    if (currentEvent === 'click') {
+        if (audio.ended) {
+            isPlaying = !isPlaying;
+            cleanupInterval();
+            startPlayer();
+            togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        }
+
+        audio.pause;
+        audio.currentTime = newTime;
+        isTransitioning = true;
+        await delay(200);
+        audio.play;
+        isTransitioning = false;
+        progressTracker();
+    }
+}
+
+function displayInfoInteraction () {
+    volumeSliderEl.addEventListener('mouseenter' , (e) => {
+        displayInfoEl.style.opacity = '1';
+        updateDisPlayInfo()
+    });
+    volumeSliderEl.addEventListener('mouseleave' , () => {
+        displayInfoEl.style.opacity = '0';
+        updateDisPlayInfo()
+    });
+    volumeSliderEl.addEventListener('input' , (e) => {
+        updateDisPlayInfo(e)
+    });
+}
+
+function updateDisPlayInfo (e) {
+    if (audio.muted) return displayInfoEl.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>'
+    displayInfoEl.innerHTML = (Math.floor(audio.volume * 100)) + '%'
+}
+
+// utils function 
 
 function cleanupPlayer() {
     cleanupInterval();
@@ -321,35 +412,3 @@ function currentBackgroundVideo(songId) {
 function initialVideoBackground() {
     backgroundVideo.currentTime = 0;
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    (function setupEventListeners() {
-        backButtonEl.addEventListener('click', backToHome);
-        closeShortButton.addEventListener('click', backToHome);
-        togglePlayAndPauseEl.addEventListener('click', togglePlayAndPause);
-        nextSongEl.addEventListener('click', (e) => handleControlPlayer(0, e));
-        prevSongEl.addEventListener('click', (e) => handleControlPlayer(1, e));
-        repeatButtonEl.addEventListener('click', (e) => handleControlPlayer(2, e));
-        shuffleButtonEl.addEventListener('click', (e) => handleControlPlayer(3, e));
-        volumeSliderEl.addEventListener('input', (e) => updateVolume(e));
-        volumeSliderEl.addEventListener('change', (e) => updateVolume(e));
-        iconVolumeStatusEl.addEventListener('click', toggleVolume);
-    })();
-
-    (function renderSongList() {
-        albums.forEach(song => {
-            const songListItem = document.createElement('li');
-            songListItem.setAttribute('data-id', song.id);
-            songListItem.setAttribute('class', 'song-list');
-            songListItem.innerHTML = `
-                <img class="currentSongPicture" src="${song.albumArtUrl}" alt="${song.title}">
-                <div class="current-song-detail">
-                    <h3 class="currentSongName">${song.title}</h3>
-                    <p class="currentSongArtist">${song.artist}</p>
-                </div>
-            `;
-            songListContainer.appendChild(songListItem);
-        });
-        listInteraction();
-    })();
-});
