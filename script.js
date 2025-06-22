@@ -20,6 +20,7 @@ const iconVolumeStatusEl = document.getElementById('iconStatusVolume');
 const closeShortButtonEl = document.getElementById('closeShortButton');
 const displayInfoEl = document.getElementById('playerInfo');
 const progressPlayerEl = document.getElementById('progressPlayer');
+const lyricContainerEl = document.getElementById('lyricContainer')
 
 const currentPage = 'current-page';
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -30,7 +31,9 @@ let currentData = null;
 let audio = null;
 let animationFrameId = null;
 let isPlaying = false;
-let currentMode = null;
+let currentMode = [];
+let lyricIndex = 0;
+let lastLyricIndex = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
     (function setupEventListeners() {
@@ -102,15 +105,19 @@ function setupAudioEvents() {
 }
 
 function showMusicPlayer() {
-    isPlaying = true;
-    togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>';
     startPlayer();
     updateUI();
     switchToPlayerPage();
+    renderLyrics();
 }
 
 function startPlayer() {
+    isPlaying = true;
+    togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    
     cleanupInterval();
+    renderLyrics();
+
     audio.play()
         .then(() => {
             progressTracker();
@@ -174,6 +181,9 @@ function pauseAudio() {
 }
 
 function playAudio() {
+    if (audio.ended) {
+        renderLyrics();
+    }
     audio.play()
         .then(() => {
             isPlaying = true;
@@ -228,6 +238,7 @@ function backToHome() {
     videoBgContainer.classList.remove('player-active');
     homePage.classList.add(currentPage);
 }
+
 // Control player function 
 
 function handleControlPlayer(idxMode, e) {
@@ -239,15 +250,23 @@ function handleControlPlayer(idxMode, e) {
             playPreviousSong();
             break;
         case 2:
-            if (!currentMode) {
-                currentMode = idxMode;
+            if (currentMode.length > 0) {
+                currentMode.pop();
+                currentMode.push(idxMode);
             } else {
-                currentMode = null;
+                currentMode.push(idxMode);
             }
             console.log(currentMode);
             togglePlayerMode(e);
             break;
         case 3:
+            if (currentMode.length > 0) {
+                currentMode.pop();
+                currentMode.push(idxMode);
+            } else {
+                currentMode.push(idxMode);
+            }
+            console.log(currentMode);
             togglePlayerMode(e);
             break;
 
@@ -257,12 +276,13 @@ function handleControlPlayer(idxMode, e) {
 async function checkCurrentMode() {
     console.log(currentMode);
 
-    if (currentMode !== null) {
-        switch (currentMode) {  
+    if (currentMode.length > 0) {
+        switch (parseInt(currentMode.toString() , 10)) {  
             case 2:
                 repeatMode();
                 break;
             case 3:
+                shufffleMode();
                 break;
             default:
                 console.log("This Mode doesn't match !!");
@@ -298,12 +318,14 @@ async function playNextSong() {
 async function playPreviousSong() {
     if (isTransitioning) return;
     isTransitioning = true;
+    nextSongEl.setAttribute('disabled' , true)
+
     const currentIndex = albums.findIndex(song => song.id === currentData.id);
     const prevIndex = currentIndex - 1 < 0 ? albums.length - 1 : currentIndex - 1;
     const prevSongId = albums[prevIndex].id;
-
     await switchSong(prevSongId);
 
+    nextSongEl.removeAttribute('disabled')
     isTransitioning = false;
 }
 
@@ -316,16 +338,25 @@ async function switchSong(songId) {
 
 async function repeatMode() {
     await delay(1500);
-
     resetUI();
     cleanupInterval();
-
-    isPlaying = !isPlaying;
-    togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>';
     startPlayer();
+    renderLyrics();
+}
+
+async function shufffleMode() {
+    await delay(1500);
+    const currentIndex = albums.findIndex(s => s.id === currentData.id);
+    let randomIndex = null;
+    while (randomIndex === null || randomIndex === currentIndex) {
+        randomIndex = Math.floor(Math.random() * albums.length);
+    } 
+    await switchSong(randomIndex);
 }
 
 async function updateAudioTime(e) {
+    if (!audio || !audio.duration) return;
+
     const currentEvent = e.type;
     const rect = progressPlayerEl.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -333,11 +364,11 @@ async function updateAudioTime(e) {
     const newTime = Math.abs(Math.round((percent / 100) * audio.duration));
     
     if (currentEvent === 'click') {
+        if (!isPlaying) startPlayer();
+        
         if (audio.ended) {
-            isPlaying = !isPlaying;
             cleanupInterval();
             startPlayer();
-            togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-pause"></i>';
         }
 
         audio.pause;
@@ -368,6 +399,59 @@ function updateDisPlayInfo (e) {
     if (audio.muted) return displayInfoEl.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>'
     displayInfoEl.innerHTML = (Math.floor(audio.volume * 100)) + '%'
 }
+
+// Lyrics Tracking
+
+function renderLyrics() {
+    lyricContainerEl.innerHTML = ''
+    const lyrics = currentData.lyrics;
+    lyrics.forEach((lyric) => {
+        const lyricLine = document.createElement('div');
+        lyricLine.setAttribute('class' , 'lyric-line'); 
+        lyricLine.innerHTML = lyric.text;
+        lyricContainerEl.appendChild(lyricLine);
+    });
+    lyricIndex = 0;
+    animationFrameId = requestAnimationFrame(lyricTracking);
+}
+
+function lyricTracking() {
+    if (!audio) return;
+
+    const lyrics = currentData.lyrics;
+    (function updateLyric() {
+        for (let i = lyricIndex; i < lyrics.length; i++) {
+            // console.log(lyrics[i].time);
+            if (audio.currentTime >= lyrics[i].time) {
+                lyricIndex = i;
+                hightLightLyric(i);
+            } else {
+                break;
+            }
+        }
+        animationFrameId = requestAnimationFrame(lyricTracking);
+    })();
+}
+
+function hightLightLyric(lyricIndex) {
+    const lyricLines = document.querySelectorAll('.lyric-line');
+
+    if (lyricIndex !== lastLyricIndex || lastLyricIndex == 0) {
+        lastLyricIndex = lyricIndex;
+        lyricLines.forEach((line , index) => {
+            if (lyricIndex === index) { 
+                lyricLines[index].classList.add('current-lyric');
+                lyricLines[index].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'  
+                });
+            } else {
+                lyricLines[index].classList.remove('current-lyric');
+            }
+        });
+    }
+}
+
 
 // utils function 
 
