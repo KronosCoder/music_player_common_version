@@ -284,12 +284,13 @@ body {
     transition: color 0.3s ease;
     display: block;
     margin-bottom: 0.2em;
-    transition: font-size 0.4s ease-in-out;
+    font-weight: 500;
+    transition: font-size 0.4s ease;
 }
 
 .lyric-line.current-lyric {
     color: #fff;
-    text-shadow: 0 0 5px #fff , 0 0 5px #fff;
+    text-shadow: 0 0 3px #fff;
     font-size: 0.9rem;
 }
 

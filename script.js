@@ -154,7 +154,7 @@ function progressTracker() {
     const minutes = Math.floor(currentTime / 60);
     const seconds = Math.floor(currentTime % 60);
 
-    const formatMinute = minutes < 10 ? `0${minutes}` : minutes;
+    const formatMinute = minutes < 10 ? `${minutes}` : minutes;
     const formatSecond = seconds < 10 ? `0${seconds}` : seconds;
 
     currentSecEl.innerHTML = `${formatMinute}:${formatSecond}`;
@@ -377,6 +377,7 @@ async function updateAudioTime(e) {
         await delay(200);
         audio.play;
         isTransitioning = false;
+        renderLyrics();
         progressTracker();
     }
 }
@@ -481,7 +482,7 @@ function resetAudio() {
 function resetUI() {
     currentProgressEl.style.width = '0%';
     currentProgressEl.classList.remove('running');
-    currentSecEl.innerHTML = '00:00';
+    currentSecEl.innerHTML = '0:00';
     togglePlayAndPauseEl.innerHTML = '<i class="fa-solid fa-play"></i>';
 }
 
