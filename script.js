@@ -185,6 +185,7 @@ function pauseAudio() {
 
 function playAudio() {
     if (audio.ended) {
+        initialVideoBackground();
         renderLyrics();
     }
     audio.play()
@@ -342,6 +343,7 @@ async function switchSong(songId) {
 async function repeatMode() {
     await delay(1500);
     resetUI();
+    initialVideoBackground();
     cleanupInterval();
     startPlayer();
     renderLyrics();
@@ -385,7 +387,7 @@ async function updateAudioTime(e) {
     }
 }
 
-function displayInfoInteraction () {
+function displayInfoInteraction() {
     volumeSliderEl.addEventListener('mouseenter' , (e) => {
         displayInfoEl.style.opacity = '1';
         updateDisPlayInfo(e);
@@ -417,7 +419,7 @@ function updateDisPlayInfo (e) {
     if (srcElementId === 'volumeSlider') {
         if (audio.muted) return displayInfoEl.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>'
         displayInfoEl.innerHTML = (Math.floor(audio.volume * 100)) + '%'
-    } else {
+    } else if (srcElementId === 'playSpeedSlider') {
         displayInfoEl.innerHTML = 'x' + (Math.abs(audio.playbackRate));
     }
 }
