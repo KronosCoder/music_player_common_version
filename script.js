@@ -20,7 +20,8 @@ const iconVolumeStatusEl = document.getElementById('iconStatusVolume');
 const closeShortButtonEl = document.getElementById('closeShortButton');
 const displayInfoEl = document.getElementById('playerInfo');
 const progressPlayerEl = document.getElementById('progressPlayer');
-const lyricContainerEl = document.getElementById('lyricContainer')
+const lyricContainerEl = document.getElementById('lyricContainer');
+const speedSliderEl = document.getElementById('playSpeedSlider');
 
 const currentPage = 'current-page';
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -134,12 +135,14 @@ function progressInteraction () {
     shuffleButtonEl.addEventListener('click', (e) => handleControlPlayer(3, e));
     volumeSliderEl.addEventListener('input', (e) => updateVolume(e));
     volumeSliderEl.addEventListener('change', (e) => updateVolume(e));
+    speedSliderEl.addEventListener('input', (e) => updateRateAudio(e));
+    speedSliderEl.addEventListener('change', (e) => updateRateAudio(e));
     iconVolumeStatusEl.addEventListener('click', toggleVolume);
 
-    progressPlayerEl.addEventListener('mouseenter' , (e) => updateAudioTime(e))
-    // progressPlayerEl.addEventListener('mousemove' , (e) => updateAudioTime(e))
-    progressPlayerEl.addEventListener('input' , (e) => updateAudioTime(e))
-    progressPlayerEl.addEventListener('click' , (e) => updateAudioTime(e))
+    progressPlayerEl.addEventListener('mouseenter' , (e) => updateAudioTime(e));
+    // progressPlayerEl.addEventListener('mousemove' , (e) => updateAudioTime(e));
+    progressPlayerEl.addEventListener('input' , (e) => updateAudioTime(e));
+    progressPlayerEl.addEventListener('click' , (e) => updateAudioTime(e));
 }
 
 function progressTracker() {
@@ -385,22 +388,45 @@ async function updateAudioTime(e) {
 function displayInfoInteraction () {
     volumeSliderEl.addEventListener('mouseenter' , (e) => {
         displayInfoEl.style.opacity = '1';
-        updateDisPlayInfo()
+        updateDisPlayInfo(e);
     });
     volumeSliderEl.addEventListener('mouseleave' , () => {
         displayInfoEl.style.opacity = '0';
-        updateDisPlayInfo()
+        updateDisPlayInfo();
     });
     volumeSliderEl.addEventListener('input' , (e) => {
-        updateDisPlayInfo(e)
+        updateDisPlayInfo(e);
+    });
+
+    speedSliderEl.addEventListener('mouseenter' , (e) => {
+        displayInfoEl.style.opacity = '1';
+        updateDisPlayInfo(e);
+    });
+    speedSliderEl.addEventListener('mouseleave' , () => {
+        displayInfoEl.style.opacity = '0';
+        updateDisPlayInfo();
+    });
+    speedSliderEl.addEventListener('input' , (e) => {
+        updateDisPlayInfo(e);
     });
 }
 
 function updateDisPlayInfo (e) {
-    if (audio.muted) return displayInfoEl.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>'
-    displayInfoEl.innerHTML = (Math.floor(audio.volume * 100)) + '%'
+    const srcElementId = e?.srcElement.id;
+    console.log(srcElementId)
+    if (srcElementId === 'volumeSlider') {
+        if (audio.muted) return displayInfoEl.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>'
+        displayInfoEl.innerHTML = (Math.floor(audio.volume * 100)) + '%'
+    } else {
+        displayInfoEl.innerHTML = 'x' + (Math.abs(audio.playbackRate));
+    }
 }
 
+function updateRateAudio(e) {
+    const currentRate = e.target.value;
+    console.log(currentRate);
+    audio.playbackRate = currentRate;
+}
 // Lyrics Tracking
 
 function renderLyrics() {
